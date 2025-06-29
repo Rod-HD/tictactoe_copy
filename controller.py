@@ -42,13 +42,7 @@ class GameController:
         else:
             self._ai = None
 
-    # -------- observer glue -----------------------------------------------
-
-    def register(self, obs: GameObserver) -> None:
-        self._observers.append(obs)
-        # Immediately sync fresh observer with current state
-        obs.on_state_change(self._state, self._current)
-
+    # -------- private actions -----------------------------------------------
     def _notify_board(self, coords: Tuple[int, int], symbol: str) -> None:
         for obs in self._observers:
             obs.on_board_change(coords, symbol)
@@ -59,6 +53,11 @@ class GameController:
             obs.on_state_change(self._state, nxt)
 
     # -------- public actions ----------------------------------------------
+
+    def register(self, obs: GameObserver) -> None:
+        self._observers.append(obs)
+        # Immediately sync fresh observer with current state
+        obs.on_state_change(self._state, self._current)
 
     def play(self, i: int, j: int) -> None:
         if self._state is not GameState.IN_PROGRESS:

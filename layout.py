@@ -24,7 +24,7 @@ from controller import GameController, GameState, GameObserver  # giữ nguyên
 from board import Board
 from themes import Theme
 from sound_manager import SoundManager
-from widgets_board import BoardWidget      # thêm dòng này
+from widgets import BoardWidget
 
 
 
