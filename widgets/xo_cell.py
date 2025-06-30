@@ -3,7 +3,7 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties    import StringProperty
 from kivy.core.window   import Window
 
-CELL_SIZE = 80         # px – fixed
+CELL_SIZE = 112         # px – fixed
 ASSET_ROOT = "assets/wood"
 
 class XOCell(ButtonBehavior, Image):

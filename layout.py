@@ -25,27 +25,27 @@ from board import Board
 from themes import Theme
 from sound_manager import SoundManager
 from widgets import BoardWidget
-
-
-
+from kivy.app import App
+from utils import style_round_button
 # --------------------------------------------------------------------------- #
 class TicTacToeLayout(FloatLayout):          # type: ignore[misc]
     """Main root widget shown by the App.
 
     NOTE: the class name is unchanged so **all existing imports remain valid**.
     """
-
+    
     status_message = StringProperty("X's turn")
 
     # --------------------------- construction ------------------------------ #
     def __init__(self, controller: GameController, theme: Theme, **kw):
+        LIGHT = (0.75, 0.60, 0.45, 1)
         super().__init__(**kw)
 
         # ---------- background that stretches with the window -------------
         with self.canvas.before:
             self._bg = Rectangle(source=theme.bg, pos=self.pos, size=self.size)
         self.bind(size=self._sync_bg, pos=self._sync_bg)
-
+        
         # ---------- keep refs --------------------------------------------
         self._controller = controller
         self._board: Board = controller.getBoard()
@@ -67,8 +67,8 @@ class TicTacToeLayout(FloatLayout):          # type: ignore[misc]
         self._board_container.add_widget(self._grid)
         self._grid.reset(self._board)
         # ---------- status + restart bar at the bottom --------------------
-        BAR_HEIGHT   = 70
-        LABEL_HEIGHT = 30
+        BAR_HEIGHT   = 200
+        LABEL_HEIGHT = 28
 
         self._ui_bar = BoxLayout(orientation="vertical",
                                  size_hint=(1, None),
@@ -76,16 +76,16 @@ class TicTacToeLayout(FloatLayout):          # type: ignore[misc]
                                  pos_hint={"x": 0, "y": 0})
 
         self._status = Label(text=self.status_message,
-                             size_hint=(1, None), height=LABEL_HEIGHT)
+                             size_hint=(1, None), height=LABEL_HEIGHT, font_size='20sp')
 
         self._restart = Button(text="Restart",
-                               size_hint=(1, None), height=BAR_HEIGHT - LABEL_HEIGHT,
+                               size_hint=(1, None), height=BAR_HEIGHT - LABEL_HEIGHT, font_size='32sp',
                                opacity=0, disabled=True)
         self._restart.bind(on_release=self._on_restart)
 
         self._ui_bar.add_widget(self._status)
         self._ui_bar.add_widget(self._restart)
-
+        style_round_button(self._restart, rgba=LIGHT)
         # ---------- assemble ---------------------------------------------
         self.add_widget(self._board_container)
         self.add_widget(self._ui_bar)
@@ -99,21 +99,24 @@ class TicTacToeLayout(FloatLayout):          # type: ignore[misc]
 
     # ------------------ geometric helpers --------------------------------- #
     def _update_board_geometry(self, *_):
-        """Keep the board square, filling the window width when possible."""
         win_w, win_h = Window.size
-        ui_h = self._ui_bar.height
-        # maximum side allowed without hiding the bar
-        max_side = win_h - ui_h
-        side = min(win_w, max_side)
-        # fallback if the bar is taller than the window (extreme case)
-        side = max(0, side)
+        ui_h   = self._ui_bar.height          # thanh trạng thái + nút Restart
 
-        # size + vertical centring (board plus bar treated as a block)
+        # ❶ Phần không gian thực sự có thể đặt bàn cờ  
+        free_h = win_h - ui_h                 # trừ đi thanh dưới cùng
+
+        # ❷ Cạnh bàn cờ lấy cạnh nhỏ hơn giữa free_h và win_w  
+        side   = min(win_w, free_h)
+
+        # ❸ (tuỳ chọn) phóng to thêm 5 % nếu bạn muốn sát biên
+        # side = int(side * 1.05)   # bỏ dòng này nếu không cần
+
+        # ❹ Cập nhật kích thước & căn giữa  
         self._board_container.size = (side, side)
-
-        # vertical centre in free space (leave ui_bar at bottom)
-        y_base = ui_h + (max(0, win_h - ui_h - side)) / 2
-        self._board_container.pos = ((win_w - side) / 2, y_base)
+        self._board_container.pos  = (
+            (win_w - side) / 2,              # căn giữa theo trục X
+            ui_h + (free_h - side) / 2       # căn giữa phần trống còn lại
+        )
 
     def _sync_bg(self, *_):
         self._bg.pos, self._bg.size = self.pos, self.size
@@ -154,3 +157,5 @@ class TicTacToeLayout(FloatLayout):          # type: ignore[misc]
 
     def _hide_restart(self):
         self._restart.disabled, self._restart.opacity = True, 0
+
+    

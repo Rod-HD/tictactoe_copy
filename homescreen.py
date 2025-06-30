@@ -7,7 +7,8 @@ from kivy.uix.button import Button
 from kivy.graphics import Rectangle
 from kivy.uix.popup import Popup
 from kivy.app import App
-
+from utils import style_round_button 
+from kivy.graphics import Color, RoundedRectangle
 class HomeScreen(Screen):
     """Home screen with game mode selection."""
     
